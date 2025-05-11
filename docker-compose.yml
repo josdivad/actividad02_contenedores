@@ -1,0 +1,56 @@
+#Version de docker compose
+version: "3.8"
+
+#Servicios de la aplicacion a dockerizar:
+services:
+  #Nombre del servicio de backend
+  backend:
+    #Construccion de imagen utilizando docker file del backend
+    build: ./backend
+    #Exponer en puerto 3000 del contenedor al puerto 3000 del host
+    ports:
+      - "3000:3000"
+    #Asegura que se ejecute el servicio mysql primero:
+    depends_on:
+      - mysql
+    #Servicio se conecta a la red
+    networks:
+      - red-app
+
+  #Nombre del servicio de frontend
+  frontend:
+    #Construccion de imagen utilizando docker file del frontend
+    build: ./frontend
+    #Exponer en puerto 80 del contenedor al puerto 80 del host (servidor web)
+    ports:
+      - "80:80"
+    #Servicio se conecta a la red
+    networks:
+      - red-app
+
+  #Nombre del servicio de base de datos
+  mysql:
+    #Utiliza imagen de mysql desde docker hub
+    image: mysql:8
+    #variables de entorno
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: visitasdb
+    #Se utiliza un volumen persistente mysql_data para el almacenamiento de objetos de base de datos
+    volumes:
+      - mysql_data:/var/lib/mysql
+    #Exponer en puerto 3306 del contenedor al host
+    ports:
+      - "3306:3306"
+    #servicio se conecta a la red
+    networks:
+      - red-app
+
+#Definicion del volumen persistente mysql_data
+volumes:
+  mysql_data:
+
+#Configuracion red personalizada
+networks:
+  red-app:
+    driver: bridge
